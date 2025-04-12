@@ -1,0 +1,23 @@
+
+
+
+B
+
+AI Prompts Used in Wrangler Project
+TestingRig Class Issue Fix
+
+Prompt 1: Analyze Import Issue in AggregateStatsDirectiveTest
+
+Analyze the import issues in AggregateStatsDirectiveTest.java. The test is using io.cdap.wrangler.test.TestingRig but there seems to be a missing method. Compare with io.cdap.wrangler.TestingRig in the wrangler-core module to identify what's missing.
+
+Prompt 2: Fix TestingRig in wrangler-test Module
+
+Add the execute(String[], List<Row>) method to the TestingRig class in the wrangler-test module (io.cdap.wrangler.test.TestingRig) to match the functionality in wrangler-core's TestingRig class. Ensure proper import statements and adherence to the project's checkstyle rules.
+
+Prompt 3: Verify Fix in AggregateStatsDirectiveTest
+
+Verify that the AggregateStatsDirectiveTest now correctly uses the execute method from the wrangler-test module's TestingRig class without import conflicts. Run the tests to confirm everything passes.
+
+
+
+

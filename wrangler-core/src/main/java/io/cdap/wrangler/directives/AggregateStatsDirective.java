@@ -1,5 +1,5 @@
 /*
- * Copyright © 2017-2019 Cask Data, Inc.
+ * Copyright 2017-2019 Cask Data, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,6 +18,7 @@ package io.cdap.wrangler.directives;
 
 import io.cdap.wrangler.api.Arguments;
 import io.cdap.wrangler.api.Directive;
+import io.cdap.wrangler.api.DirectiveParseException;
 import io.cdap.wrangler.api.Executor;
 import io.cdap.wrangler.api.ExecutorContext;
 import io.cdap.wrangler.api.Row;
@@ -63,29 +64,35 @@ public class AggregateStatsDirective implements Directive, Executor<List<Row>, L
   }
 
   @Override
-  public void initialize(Arguments args) {
+  public void initialize(Arguments args) throws DirectiveParseException {
     if (args.size() < 4) {
       throw new IllegalArgumentException("aggregate-stats requires at least 4 arguments");
     }
 
-    sizeColumn = (String) ((ColumnName) args.value("size-column")).value();
-    timeColumn = (String) ((ColumnName) args.value("time-column")).value();
-    totalSizeColumn = (String) ((ColumnName) args.value("total-size-column")).value();
-    totalTimeColumn = (String) ((ColumnName) args.value("total-time-column")).value();
+    // Process required arguments
+    sizeColumn = ((ColumnName) args.value("size-column")).value().toString();
+    timeColumn = ((ColumnName) args.value("time-column")).value().toString();
+    totalSizeColumn = ((ColumnName) args.value("total-size-column")).value().toString();
+    totalTimeColumn = ((ColumnName) args.value("total-time-column")).value().toString();
 
+    // Process optional arguments
     if (args.contains("size-unit")) {
-      sizeUnit = (String) args.value("size-unit").value();
+      sizeUnit = args.value("size-unit").value().toString();
     }
     if (args.contains("time-unit")) {
-      timeUnit = (String) args.value("time-unit").value();
+      timeUnit = args.value("time-unit").value().toString();
     }
     if (args.contains("aggregation-type")) {
-      aggregationType = (String) args.value("aggregation-type").value();
+      aggregationType = args.value("aggregation-type").value().toString();
     }
   }
 
   @Override
   public List<Row> execute(List<Row> rows, ExecutorContext context) {
+    rowCount = 0;
+    totalBytes = 0;
+    totalNanoseconds = 0;
+    
     for (Row row : rows) {
       int sizeIdx = row.find(sizeColumn);
       int timeIdx = row.find(timeColumn);
@@ -111,22 +118,25 @@ public class AggregateStatsDirective implements Directive, Executor<List<Row>, L
     Row result = new Row();
     
     // Convert total bytes to specified unit
-    double totalSize = convertBytesToUnit(totalBytes, sizeUnit);
+    Double totalSize = convertBytesToUnit(totalBytes, sizeUnit);
     result.add(totalSizeColumn, totalSize);
 
     // Convert total nanoseconds to specified unit
-    double totalTime = convertNanosecondsToUnit(totalNanoseconds, timeUnit);
-    if ("average".equals(aggregationType)) {
+    Double totalTime = convertNanosecondsToUnit(totalNanoseconds, timeUnit);
+    
+    // Apply aggregation type if needed
+    if ("average".equalsIgnoreCase(aggregationType) && rowCount > 0) {
       totalTime = totalTime / rowCount;
     }
+    
     result.add(totalTimeColumn, totalTime);
 
     return List.of(result);
   }
 
-  private double convertBytesToUnit(long bytes, String unit) {
+  private Double convertBytesToUnit(long bytes, String unit) {
     switch (unit.toUpperCase()) {
-      case "B": return bytes;
+      case "B": return (double) bytes;
       case "KB": return bytes / 1024.0;
       case "MB": return bytes / (1024.0 * 1024.0);
       case "GB": return bytes / (1024.0 * 1024.0 * 1024.0);
@@ -137,9 +147,9 @@ public class AggregateStatsDirective implements Directive, Executor<List<Row>, L
     }
   }
 
-  private double convertNanosecondsToUnit(long nanoseconds, String unit) {
+  private Double convertNanosecondsToUnit(long nanoseconds, String unit) {
     switch (unit.toLowerCase()) {
-      case "ns": return nanoseconds;
+      case "ns": return (double) nanoseconds;
       case "ms": return nanoseconds / 1000000.0;
       case "s": return nanoseconds / 1000000000.0;
       case "m": return nanoseconds / (1000000000.0 * 60.0);
@@ -151,6 +161,9 @@ public class AggregateStatsDirective implements Directive, Executor<List<Row>, L
 
   @Override
   public void destroy() {
-    // No cleanup needed
+    // Reset state to avoid carrying over values between calls
+    totalBytes = 0;
+    totalNanoseconds = 0;
+    rowCount = 0;
   }
-} 
+}

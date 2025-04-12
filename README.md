@@ -22,6 +22,20 @@ are manually created.
 
 More [here](wrangler-docs/upcoming-features.md) on upcoming features.
 
+  * **Byte Size and Time Duration Parsers**, allow you to parse and work with byte sizes (e.g., "10KB", "1MB") and time durations (e.g., "100ms", "5s") in your recipes. These parsers support:
+    * Byte size units: B, KB, MB, GB, TB, PB, EB
+    * Time duration units: ns, ms, s, m, h, d
+    * A new `aggregate-stats` directive for aggregating byte sizes and time durations
+    * Example usage:
+      ```
+      # Parse byte sizes and time durations
+      parse-as-byte-size :data_size
+      parse-as-time-duration :response_time
+      
+      # Aggregate statistics
+      aggregate-stats :data_size :response_time total_size_mb total_time_sec
+      ```
+
   * **User Defined Directives, also known as UDD**, allow you to create custom functions to transform records within CDAP DataPrep or a.k.a Wrangler. CDAP comes with a comprehensive library of functions. There are however some omissions, and some specific cases for which UDDs are the solution. Additional information on how you can build your custom directives [here](wrangler-docs/custom-directive.md).
     * Migrating directives from version 1.0 to version 2.0 [here](wrangler-docs/directive-migration.md)
     * Information about Grammar [here](wrangler-docs/grammar/grammar-info.md)
@@ -68,6 +82,8 @@ These directives are currently available:
 | Directive                                                              | Description                                                      |
 | ---------------------------------------------------------------------- | ---------------------------------------------------------------- |
 | **Parsers**                                                            |                                                                  |
+| [Byte Size Parser](wrangler-docs/directives/parse-as-byte-size.md)     | Parses byte sizes with units (e.g., "10KB", "1MB")               |
+| [Time Duration Parser](wrangler-docs/directives/parse-as-time-duration.md) | Parses time durations with units (e.g., "100ms", "5s")           |
 | [JSON Path](wrangler-docs/directives/json-path.md)                              | Uses a DSL (a JSON path expression) for parsing JSON records     |
 | [Parse as AVRO](wrangler-docs/directives/parse-as-avro.md)                      | Parsing an AVRO encoded message - either as binary or json       |
 | [Parse as AVRO File](wrangler-docs/directives/parse-as-avro-file.md)            | Parsing an AVRO data file                                        |
@@ -163,6 +179,8 @@ These directives are currently available:
 | [DDL](wrangler-docs/functions/ddl-functions.md)                                 | Functions that can manipulate definition of data                 |
 | [JSON](wrangler-docs/functions/json-functions.md)                               | Functions that can be useful in transforming your data           |
 | [Types](wrangler-docs/functions/type-functions.md)                              | Functions for detecting the type of data                         |
+| **Aggregations**                                                       |                                                                  |
+| [Aggregate Stats](wrangler-docs/directives/aggregate-stats.md)        | Aggregates byte sizes and time durations with configurable units |
 
 ## Performance
 

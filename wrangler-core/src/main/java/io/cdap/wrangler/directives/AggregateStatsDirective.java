@@ -16,6 +16,7 @@
 
 package io.cdap.wrangler.directives;
 
+import io.cdap.wrangler.api.Arguments;
 import io.cdap.wrangler.api.Directive;
 import io.cdap.wrangler.api.Executor;
 import io.cdap.wrangler.api.ExecutorContext;
@@ -27,7 +28,6 @@ import io.cdap.wrangler.api.parser.TimeDuration;
 import io.cdap.wrangler.api.parser.Token;
 import io.cdap.wrangler.api.parser.TokenType;
 import io.cdap.wrangler.api.parser.UsageDefinition;
-import io.cdap.wrangler.api.Arguments;
 
 import java.util.List;
 

@@ -17,14 +17,17 @@
 package io.cdap.wrangler.directives;
 
 import io.cdap.wrangler.api.Directive;
+import io.cdap.wrangler.api.Executor;
 import io.cdap.wrangler.api.ExecutorContext;
 import io.cdap.wrangler.api.Row;
 import io.cdap.wrangler.api.annotations.Categories;
 import io.cdap.wrangler.api.parser.ByteSize;
 import io.cdap.wrangler.api.parser.ColumnName;
 import io.cdap.wrangler.api.parser.TimeDuration;
+import io.cdap.wrangler.api.parser.Token;
 import io.cdap.wrangler.api.parser.TokenType;
 import io.cdap.wrangler.api.parser.UsageDefinition;
+import io.cdap.wrangler.api.Arguments;
 
 import java.util.List;
 
@@ -32,7 +35,7 @@ import java.util.List;
  * A directive for aggregating byte size and time duration statistics.
  */
 @Categories(categories = {"aggregate"})
-public class AggregateStatsDirective implements Directive {
+public class AggregateStatsDirective implements Directive, Executor<List<Row>, List<Row>> {
   public static final String NAME = "aggregate-stats";
   private String sizeColumn;
   private String timeColumn;
@@ -60,24 +63,24 @@ public class AggregateStatsDirective implements Directive {
   }
 
   @Override
-  public void initialize(List<Token> args) {
+  public void initialize(Arguments args) {
     if (args.size() < 4) {
       throw new IllegalArgumentException("aggregate-stats requires at least 4 arguments");
     }
 
-    sizeColumn = ((ColumnName) args.get(0)).value();
-    timeColumn = ((ColumnName) args.get(1)).value();
-    totalSizeColumn = ((ColumnName) args.get(2)).value();
-    totalTimeColumn = ((ColumnName) args.get(3)).value();
+    sizeColumn = (String) ((ColumnName) args.value("size-column")).value();
+    timeColumn = (String) ((ColumnName) args.value("time-column")).value();
+    totalSizeColumn = (String) ((ColumnName) args.value("total-size-column")).value();
+    totalTimeColumn = (String) ((ColumnName) args.value("total-time-column")).value();
 
-    if (args.size() > 4) {
-      sizeUnit = args.get(4).value().toString();
+    if (args.contains("size-unit")) {
+      sizeUnit = (String) args.value("size-unit").value();
     }
-    if (args.size() > 5) {
-      timeUnit = args.get(5).value().toString();
+    if (args.contains("time-unit")) {
+      timeUnit = (String) args.value("time-unit").value();
     }
-    if (args.size() > 6) {
-      aggregationType = args.get(6).value().toString();
+    if (args.contains("aggregation-type")) {
+      aggregationType = (String) args.value("aggregation-type").value();
     }
   }
 

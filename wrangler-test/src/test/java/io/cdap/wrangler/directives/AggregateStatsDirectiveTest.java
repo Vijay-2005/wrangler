@@ -1,5 +1,5 @@
 /*
- * Copyright © 2017-2019 Cask Data, Inc.
+ * Copyright 2017-2019 Cask Data, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,9 +16,13 @@
 
 package io.cdap.wrangler.directives;
 
+import io.cdap.wrangler.api.DirectiveLoadException;
+import io.cdap.wrangler.api.DirectiveParseException;
+import io.cdap.wrangler.api.RecipeException;
 import io.cdap.wrangler.api.Row;
 import io.cdap.wrangler.api.parser.ByteSize;
 import io.cdap.wrangler.api.parser.TimeDuration;
+import io.cdap.wrangler.test.TestingRig;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -27,7 +31,7 @@ import java.util.List;
 
 public class AggregateStatsDirectiveTest {
   @Test
-  public void testAggregateStatsTotal() {
+  public void testAggregateStatsTotal() throws RecipeException, DirectiveParseException, DirectiveLoadException {
     List<Row> rows = Arrays.asList(
       createRow("10MB", "100ms"),
       createRow("5MB", "200ms"),
@@ -42,12 +46,12 @@ public class AggregateStatsDirectiveTest {
     Assert.assertEquals(1, results.size());
     
     Row result = results.get(0);
-    Assert.assertEquals(30.0, result.getValue("total_size_mb"), 0.001);
-    Assert.assertEquals(0.6, result.getValue("total_time_sec"), 0.001);
+    Assert.assertEquals(30.0, ((Number) result.getValue("total_size_mb")).doubleValue(), 0.001);
+    Assert.assertEquals(0.6, ((Double) result.getValue("total_time_sec")).doubleValue(), 0.001);
   }
 
   @Test
-  public void testAggregateStatsAverage() {
+  public void testAggregateStatsAverage() throws RecipeException, DirectiveParseException, DirectiveLoadException {
     List<Row> rows = Arrays.asList(
       createRow("10MB", "100ms"),
       createRow("5MB", "200ms"),
@@ -62,12 +66,12 @@ public class AggregateStatsDirectiveTest {
     Assert.assertEquals(1, results.size());
     
     Row result = results.get(0);
-    Assert.assertEquals(30.0, result.getValue("total_size_mb"), 0.001);
-    Assert.assertEquals(0.2, result.getValue("total_time_sec"), 0.001);
+    Assert.assertEquals(30.0, ((Number) result.getValue("total_size_mb")).doubleValue(), 0.001);
+    Assert.assertEquals(0.2, ((Double) result.getValue("total_time_sec")).doubleValue(), 0.001);
   }
 
   @Test
-  public void testDifferentUnits() {
+  public void testDifferentUnits() throws RecipeException, DirectiveParseException, DirectiveLoadException {
     List<Row> rows = Arrays.asList(
       createRow("1024KB", "1s"),
       createRow("1MB", "1000ms")
@@ -79,10 +83,9 @@ public class AggregateStatsDirectiveTest {
 
     List<Row> results = TestingRig.execute(recipe, rows);
     Assert.assertEquals(1, results.size());
-    
     Row result = results.get(0);
-    Assert.assertEquals(2.0, result.getValue("total_size_mb"), 0.001);
-    Assert.assertEquals(2.0, result.getValue("total_time_sec"), 0.001);
+    Assert.assertEquals(2.0, ((Number) result.getValue("total_size_mb")).doubleValue(), 0.001);
+    Assert.assertEquals(2.0, ((Double) result.getValue("total_time_sec")).doubleValue(), 0.001);
   }
 
   private Row createRow(String size, String time) {
@@ -91,4 +94,4 @@ public class AggregateStatsDirectiveTest {
     row.add("response_time", new TimeDuration(time));
     return row;
   }
-} 
+}
